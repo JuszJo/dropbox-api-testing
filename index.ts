@@ -1,25 +1,76 @@
-import https from "https"
+import https from "https";
+import dotenv from "dotenv";
 
-function getRequest(url: string) {
-    https.get(url, res => {
-        const buffers: Array<Buffer> = [];
+dotenv.config();
 
-        res.on('data', chunk => {
-            const buffer = Buffer.from(chunk);
+function getRequest(url: string, options: https.RequestOptions = {}) {
+    const promise = new Promise((resolve, reject) => {
+        https.get(url, options, res => {
+            console.log(res.statusCode);
+            
+            const buffers: Array<Buffer> = [];
+    
+            res.on('data', chunk => {
+                const buffer = Buffer.from(chunk);
 
-            buffers.push(buffer);
-        })
+                console.log(buffer);
+                
+    
+                buffers.push(buffer);
+            })
+    
+            res.on('end', () => {
+                const finalBuffer = Buffer.concat(buffers);
 
-        res.on('end', () => {
-            const finalBuffer = Buffer.concat(buffers);
+                const response = finalBuffer.toString();
+    
+                // console.log(response);
 
-            console.log(finalBuffer.toString("utf-8"));
+                resolve(response)
+            })
+            
+            res.on('error', err => {
+                console.log("Error????", err);
+                
+                reject(err);
+            })
         })
     })
+
+    return promise;
+}
+
+function DropboxGetAuthToken() {
+    const dropBoxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
+
+    return dropBoxAccessToken;
+}
+
+function DropboxGetAuth() {
+    const dropBoxAppKey = process.env.DROPBOX_APP_KEY;
+    const dropBoxAppSecret = process.env.DROPBOX_APP_SECRET;
+
+    const auth = Buffer.from(`${dropBoxAppKey}:${dropBoxAppSecret}`).toString("base64");
+
+    return auth;
+}
+
+function DropboxGetListFolder() {
+    const auth = DropboxGetAuth();
+
+    const options: https.RequestOptions = {
+        headers: {
+            'Authorization': `Basic ${auth}`
+        }
+    }
+
+    const request = getRequest("https://api.dropboxapi.com/2/files/list_folder", options);
+
+    request.then(response => console.log(response));
 }
 
 function main() {
-    getRequest("https://api.dropboxapi.com/2/file_requests/count");
+    DropboxGetListFolder();
 }
 
 main();
