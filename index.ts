@@ -11,10 +11,7 @@ function getRequest(url: string, options: https.RequestOptions = {}) {
             const buffers: Array<Buffer> = [];
     
             res.on('data', chunk => {
-                const buffer = Buffer.from(chunk);
-
-                console.log(buffer);
-                
+                const buffer = Buffer.from(chunk);                
     
                 buffers.push(buffer);
             })
