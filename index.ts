@@ -121,8 +121,50 @@ function DropboxGetListFolder() {
     });
 }
 
+function DropboxGetSharedLinks() {
+    const auth = DropboxGetAuthToken();
+    // const auth = DropboxGetAuth();
+
+    const options: https.RequestOptions = {
+        hostname: 'api.dropboxapi.com',
+        path: '/2/sharing/list_shared_links',
+        method: "POST",
+        headers: {
+            'Authorization': `Bearer ${auth}`,
+            'Content-Type': 'application/json'
+        }
+    }
+
+    /* const data: GetListFolder = {
+        path: "/app/images"
+    } */
+    const cursor1 = "AspgUpjtjpNgSE9f9kljbcL6RJMs9BnyKp_LAWusASMatItQa1jrNoOv7D0e6oosOB4cj9ylkD900_Y_YusS1XiL5k-3YwwanYax7jXt-QvDpg";
+    // const cursor2 = "AsrwBfFu_KKtvhYt1Y_anEkHjyJHJltUu_xDIuqjNEZna6lCnhajxnk7gaHshnd7JbQ1I15aMHHS3Snjp5CV02UJfrcztlQcXZ6C1SAzH8oPtw";
+
+    const data = {
+        cursor: cursor1
+    }
+
+    const body = JSON.stringify(data);
+
+    const request = postRequest(options, body);
+
+    request.then(response => {
+        const res = response as Buffer;
+
+        // console.log("promise response", JSON.parse(res.toString("utf-8")));
+        const json = JSON.parse(res.toString("utf-8"));
+
+        console.log("promise response", json);
+    })
+    .catch(err => {
+        console.log("promise error", err);
+    })
+}
+
 function main() {
-    DropboxGetListFolder();
+    // DropboxGetListFolder();
+    DropboxGetSharedLinks();
 }
 
 main();
