@@ -7,14 +7,14 @@ import { postRequest } from "./http.service";
 dotenv.config();
 
 function DropboxGetAuthToken() {
-    const dropBoxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
+    const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
-    return dropBoxAccessToken;
+    return dropboxAccessToken;
 }
 
 function DropboxGetAuth() {
-    const dropBoxAppKey = process.env.DROPBOX_APP_KEY;
-    const dropBoxAppSecret = process.env.DROPBOX_APP_SECRET;
+    const dropboxAppKey = process.env.DROPBOX_APP_KEY;
+    const dropboxAppSecret = process.env.DROPBOX_APP_SECRET;
 
     const auth = Buffer.from(`${dropBoxAppKey}:${dropBoxAppSecret}`).toString("base64");
 
