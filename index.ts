@@ -1,4 +1,5 @@
 import https from "https";
+import { readFile } from "fs";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -33,7 +34,7 @@ function getRequest(url: string, options: https.RequestOptions = {}) {
     return promise;
 }
 
-function postRequest(options: https.RequestOptions, data: string) {
+function postRequest(options: https.RequestOptions, data: any) {
     const promise = new Promise((resolve, reject) => {
         const req = https.request(options, res => {
             const buffers: Array<Buffer> = [];
@@ -46,8 +47,11 @@ function postRequest(options: https.RequestOptions, data: string) {
     
             res.on('end', () => {
                 const finalBuffer = Buffer.concat(buffers);
-    
-                // console.log("Client response", response);
+                const statusCode = res.statusCode || 500;
+
+                if (statusCode < 200 || statusCode >= 300) {
+                    reject(new Error(`Request failed with status code: ${statusCode}`));
+                }
 
                 resolve(finalBuffer);
             })
@@ -162,9 +166,52 @@ function DropboxGetSharedLinks() {
     })
 }
 
+function DropboxUpload() {
+    const auth = DropboxGetAuthToken();
+
+    const dropboxAPIArgs = {
+        'path': '/app'
+    }
+
+    const options: https.RequestOptions = {
+        hostname: 'api.dropboxapi.com',
+        path: '/2/files/upload',
+        method: "POST",
+        headers: {
+            'Authorization': `Bearer ${auth}`,
+            'Content-Type': 'application/json',
+            'Dropbox-API-Arg': JSON.stringify(dropboxAPIArgs)
+        }
+    }
+
+    readFile('index.html', (err, data) => {
+        if(err) {
+            console.log("Error when reading file", err);
+        }
+        else {
+            const body = data;
+        
+            const request = postRequest(options, body);
+        
+            request.then(response => {
+                const res = response as Buffer;
+        
+                // console.log("promise response", JSON.parse(res.toString("utf-8")));
+                const json = JSON.parse(res.toString("utf-8"));
+        
+                console.log("promise response", json);
+            })
+            .catch(err => {
+                console.log("promise error", err);
+            })
+        }
+    })
+}
+
 function main() {
     // DropboxGetListFolder();
-    DropboxGetSharedLinks();
+    // DropboxGetSharedLinks();
+    DropboxUpload();
 }
 
 main();
